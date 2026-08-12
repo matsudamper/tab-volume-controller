@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Tab Volume Controller",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "タブごとに音量を調整します。unityroom などの Unity WebGL (Web Audio) にも対応。",
   "browser_specific_settings": {
     "gecko": {
