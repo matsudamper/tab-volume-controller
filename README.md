@@ -3,6 +3,8 @@
 タブごとに音量を 0〜200% で調整する Firefox 拡張機能
 Web Audio API を直接使うページ (unityroom などの Unity WebGL ゲーム) にも効きます。
 
+<img width="381" height="195" alt="image" src="https://github.com/user-attachments/assets/766d9172-b1f5-4c15-95a8-42d0b35341a4" />
+
 ## 特徴
 
 - タブ単位の音量調整 (0〜200%)。ミュート、100% 超の増幅に対応
