@@ -1,0 +1,96 @@
+:root {
+  color-scheme: light dark;
+  --accent: #2563eb;
+}
+
+body {
+  width: 280px;
+  margin: 0;
+  padding: 12px;
+  font: 13px/1.5 system-ui, "Segoe UI", "Yu Gothic UI", sans-serif;
+}
+
+header {
+  margin-bottom: 8px;
+  color: #666;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.row + .row {
+  margin-top: 10px;
+}
+
+#slider {
+  flex: 1;
+  accent-color: var(--accent);
+}
+
+#value {
+  width: 46px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+button {
+  padding: 4px 8px;
+  border: 1px solid rgba(128, 128, 128, 0.4);
+  border-radius: 5px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+
+button:hover {
+  background: rgba(128, 128, 128, 0.15);
+}
+
+button.icon {
+  width: 30px;
+  padding: 4px 0;
+  text-align: center;
+}
+
+button.icon[aria-pressed="true"] {
+  background: rgba(176, 0, 32, 0.15);
+}
+
+.presets {
+  justify-content: space-between;
+}
+
+.presets button {
+  flex: 1;
+  font-size: 12px;
+}
+
+.site button {
+  flex: 1;
+}
+
+.note {
+  margin: 6px 0 0;
+  color: #666;
+  font-size: 11px;
+}
+
+#permission-warning {
+  margin-bottom: 10px;
+  padding: 8px;
+  border-radius: 5px;
+  background: rgba(194, 65, 12, 0.15);
+}
+
+#permission-warning p {
+  margin: 0 0 6px;
+  font-size: 12px;
+}
