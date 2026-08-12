@@ -58,11 +58,3 @@ npx web-ext lint --source-dir=src    # manifest とコードの検証
 npx web-ext run --source-dir=src     # 一時プロファイルの Firefox で起動
 npx web-ext build --source-dir=src   # 配布用 zip を作成
 ```
-
-| ファイル | 役割 |
-| --- | --- |
-| `src/manifest.json` | MV3 マニフェスト |
-| `src/page-patch.js` | MAIN world。Web Audio / メディア要素への割り込み |
-| `src/bridge.js` | ISOLATED world。background ↔ ページ の橋渡し |
-| `src/background.js` | タブごとの状態管理、サイト既定値、バッジ |
-| `src/popup/` | ポップアップ UI |
