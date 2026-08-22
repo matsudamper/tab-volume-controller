@@ -1,6 +1,14 @@
 :root {
   color-scheme: light dark;
   --accent: #2563eb;
+  --popup-width: 100%;
+  --popup-min-width: 0;
+}
+
+@media (min-width: 480px) {
+  :root {
+    --popup-min-width: 360px;
+  }
 }
 
 *,
@@ -14,7 +22,8 @@ html {
 }
 
 body {
-  width: 100%;
+  width: var(--popup-width);
+  min-width: var(--popup-min-width);
   margin: 0;
   padding: 12px;
   font: 13px/1.5 system-ui, "Segoe UI", "Yu Gothic UI", sans-serif;
