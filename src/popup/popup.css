@@ -29,38 +29,38 @@ body.popup-panel .popup-root {
 :root.mobile .popup-root {
   width: 100%;
   min-width: 0;
-  font-size: 16px;
-  padding: 16px;
+  font-size: 20px;
+  padding: 20px 16px;
 }
 
 :root.mobile header {
-  margin-bottom: 12px;
-  font-size: 13px;
-}
-
-:root.mobile .row {
-  gap: 12px;
-}
-
-:root.mobile .row + .row {
-  margin-top: 14px;
-}
-
-:root.mobile .row.volume {
-  grid-template-columns: 44px minmax(0, 1fr) 56px;
-}
-
-:root.mobile button {
-  padding: 10px 12px;
-  border-radius: 8px;
+  margin-bottom: 16px;
   font-size: 15px;
 }
 
+:root.mobile .row {
+  gap: 16px;
+}
+
+:root.mobile .row + .row {
+  margin-top: 18px;
+}
+
+:root.mobile .row.volume {
+  grid-template-columns: 56px minmax(0, 1fr) 68px;
+}
+
+:root.mobile button {
+  padding: 14px 16px;
+  border-radius: 10px;
+  font-size: 18px;
+}
+
 :root.mobile button.icon {
-  width: 44px;
-  min-height: 44px;
-  padding: 8px 0;
-  font-size: 20px;
+  width: 56px;
+  min-height: 56px;
+  padding: 10px 0;
+  font-size: 28px;
 }
 
 :root.mobile .presets {
@@ -70,9 +70,9 @@ body.popup-panel .popup-root {
 }
 
 :root.mobile .presets button {
-  min-height: 44px;
-  padding: 10px 4px;
-  font-size: 14px;
+  min-height: 56px;
+  padding: 12px 6px;
+  font-size: 17px;
 }
 
 :root.mobile .presets button:nth-child(-n + 3) {
@@ -89,107 +89,27 @@ body.popup-panel .popup-root {
 }
 
 :root.mobile .site button {
-  min-height: 44px;
+  min-height: 56px;
 }
 
 :root.mobile #value {
-  font-size: 16px;
+  font-size: 20px;
 }
 
 :root.mobile #slider {
-  height: 32px;
-}
-
-:root.mobile .note {
-  font-size: 13px;
-}
-
-:root.mobile #permission-warning {
-  margin-bottom: 14px;
-  padding: 12px;
-}
-
-:root.mobile #permission-warning p {
-  font-size: 14px;
-}
-
-:root.mobile #permission-warning button {
-  min-height: 44px;
-  font-size: 15px;
-}
-
-/* Firefox for Android: 固定サイズパネル内で viewport 付きの全幅レイアウト */
-:root.android,
-:root.android body {
-  width: 100%;
-  margin: 0;
-}
-
-:root.android .popup-root {
-  width: 100%;
-  min-width: 0;
-  font-size: 20px;
-  padding: 20px 16px;
-}
-
-:root.android header {
-  margin-bottom: 16px;
-  font-size: 15px;
-}
-
-:root.android .row {
-  gap: 16px;
-}
-
-:root.android .row + .row {
-  margin-top: 18px;
-}
-
-:root.android .row.volume {
-  grid-template-columns: 56px minmax(0, 1fr) 68px;
-}
-
-:root.android button {
-  padding: 14px 16px;
-  border-radius: 10px;
-  font-size: 18px;
-}
-
-:root.android button.icon {
-  width: 56px;
-  min-height: 56px;
-  padding: 10px 0;
-  font-size: 28px;
-}
-
-:root.android .presets button {
-  min-height: 56px;
-  padding: 12px 6px;
-  font-size: 17px;
-}
-
-:root.android .site button {
-  min-height: 56px;
-}
-
-:root.android #value {
-  font-size: 20px;
-}
-
-:root.android #slider {
   -webkit-appearance: none;
   appearance: none;
   height: 44px;
   background: transparent;
 }
 
-:root.android #slider::-moz-range-track {
+:root.mobile #slider::-moz-range-track {
   height: 8px;
   border-radius: 4px;
   background: rgba(128, 128, 128, 0.35);
 }
 
-:root.android #slider::-moz-range-thumb {
+:root.mobile #slider::-moz-range-thumb {
   width: 28px;
   height: 28px;
   border: none;
@@ -197,20 +117,20 @@ body.popup-panel .popup-root {
   background: var(--accent);
 }
 
-:root.android .note {
+:root.mobile .note {
   font-size: 15px;
 }
 
-:root.android #permission-warning {
+:root.mobile #permission-warning {
   margin-bottom: 18px;
   padding: 16px;
 }
 
-:root.android #permission-warning p {
+:root.mobile #permission-warning p {
   font-size: 17px;
 }
 
-:root.android #permission-warning button {
+:root.mobile #permission-warning button {
   min-height: 56px;
   font-size: 18px;
 }
