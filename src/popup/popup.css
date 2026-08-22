@@ -9,8 +9,13 @@
   box-sizing: border-box;
 }
 
+html {
+  width: 380px;
+}
+
 body {
-  width: 280px;
+  width: 100%;
+  min-width: 380px;
   margin: 0;
   padding: 12px;
   font: 13px/1.5 system-ui, "Segoe UI", "Yu Gothic UI", sans-serif;
@@ -37,7 +42,9 @@ header {
 }
 
 #slider {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
   accent-color: var(--accent);
 }
 
