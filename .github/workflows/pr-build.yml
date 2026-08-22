@@ -6,6 +6,8 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
+  actions: write
 
 jobs:
   build:
@@ -34,9 +36,32 @@ jobs:
           echo "xpi=$xpi_path" >> "$GITHUB_OUTPUT"
 
       - name: Upload extension artifact
+        id: upload
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: tab-volume-controller-${{ steps.version.outputs.version }}
           path: ${{ steps.package.outputs.xpi }}
           archive: false
           if-no-files-found: error
+
+      - name: Comment PR with artifact link
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body-includes: "<!-- pr-build-artifact -->"
+          body: |
+            <!-- pr-build-artifact -->
+            ## PR ビルド成果物
+
+            この PR の最新ビルドから生成された拡張機能です。
+
+            | 項目 | 値 |
+            | --- | --- |
+            | バージョン | `${{ steps.version.outputs.version }}` |
+            | ファイル名 | `tab-volume-controller-${{ steps.version.outputs.version }}.xpi` |
+            | ビルド | [Actions 実行ログ](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) |
+
+            **[拡張機能をダウンロード](${{ steps.upload.outputs.artifact-url }})**
+
+            > GitHub にログインしている必要があります。
