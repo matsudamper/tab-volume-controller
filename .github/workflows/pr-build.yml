@@ -17,12 +17,26 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Build extension zip
-        run: npx web-ext build --source-dir=src --artifacts-dir=web-ext-artifacts --overwrite-dest
+      - name: Read version
+        id: version
+        run: |
+          version=$(node -p "require('./src/manifest.json').version")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Build extension package
+        id: package
+        run: |
+          npx web-ext build --source-dir=src --artifacts-dir=web-ext-artifacts --overwrite-dest
+          built_zip=$(ls web-ext-artifacts/*.zip)
+          xpi_path="web-ext-artifacts/tab-volume-controller-${{ steps.version.outputs.version }}.xpi"
+          cp "$built_zip" "$xpi_path"
+          unzip -l "$xpi_path" | grep -q ' manifest.json$'
+          echo "xpi=$xpi_path" >> "$GITHUB_OUTPUT"
 
       - name: Upload extension artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: tab-volume-controller-firefox
-          path: web-ext-artifacts/*.zip
+          name: tab-volume-controller-${{ steps.version.outputs.version }}
+          path: ${{ steps.package.outputs.xpi }}
+          archive: false
           if-no-files-found: error
