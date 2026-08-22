@@ -2,6 +2,7 @@
 <html lang="ja">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
@@ -14,9 +15,11 @@
       <span id="origin">-</span>
     </header>
 
-    <div class="row">
+    <div class="row volume">
       <button id="mute" type="button" class="icon" aria-pressed="false" title="ミュート">🔊</button>
-      <input id="slider" type="range" min="0" max="200" step="1" value="100" />
+      <div class="slider-wrap">
+        <input id="slider" type="range" min="0" max="200" step="1" value="100" />
+      </div>
       <output id="value">100%</output>
     </div>
 

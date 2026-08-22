@@ -10,12 +10,11 @@
 }
 
 html {
-  width: 380px;
+  width: 100%;
 }
 
 body {
   width: 100%;
-  min-width: 380px;
   margin: 0;
   padding: 12px;
   font: 13px/1.5 system-ui, "Segoe UI", "Yu Gothic UI", sans-serif;
@@ -37,19 +36,28 @@ header {
   width: 100%;
 }
 
+.row.volume {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) 46px;
+}
+
 .row + .row {
   margin-top: 10px;
 }
 
-#slider {
-  flex: 1 1 auto;
+.slider-wrap {
   min-width: 0;
   width: 100%;
+}
+
+#slider {
+  display: block;
+  width: 100%;
+  margin: 0;
   accent-color: var(--accent);
 }
 
 #value {
-  width: 46px;
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
