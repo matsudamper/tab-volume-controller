@@ -27,7 +27,7 @@ requestAnimationFrame(applyPopupLayout);
 
 browser.runtime.getPlatformInfo().then(({ os }) => {
   if (os === "android") {
-    document.documentElement.classList.add("mobile");
+    document.documentElement.classList.add("mobile", "android");
     document.body.classList.add("popup-panel");
   }
 });

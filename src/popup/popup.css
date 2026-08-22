@@ -118,6 +118,103 @@ body.popup-panel .popup-root {
   font-size: 15px;
 }
 
+/* Firefox for Android: 固定サイズパネル内で viewport 付きの全幅レイアウト */
+:root.android,
+:root.android body {
+  width: 100%;
+  margin: 0;
+}
+
+:root.android .popup-root {
+  width: 100%;
+  min-width: 0;
+  font-size: 20px;
+  padding: 20px 16px;
+}
+
+:root.android header {
+  margin-bottom: 16px;
+  font-size: 15px;
+}
+
+:root.android .row {
+  gap: 16px;
+}
+
+:root.android .row + .row {
+  margin-top: 18px;
+}
+
+:root.android .row.volume {
+  grid-template-columns: 56px minmax(0, 1fr) 68px;
+}
+
+:root.android button {
+  padding: 14px 16px;
+  border-radius: 10px;
+  font-size: 18px;
+}
+
+:root.android button.icon {
+  width: 56px;
+  min-height: 56px;
+  padding: 10px 0;
+  font-size: 28px;
+}
+
+:root.android .presets button {
+  min-height: 56px;
+  padding: 12px 6px;
+  font-size: 17px;
+}
+
+:root.android .site button {
+  min-height: 56px;
+}
+
+:root.android #value {
+  font-size: 20px;
+}
+
+:root.android #slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 44px;
+  background: transparent;
+}
+
+:root.android #slider::-moz-range-track {
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(128, 128, 128, 0.35);
+}
+
+:root.android #slider::-moz-range-thumb {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+:root.android .note {
+  font-size: 15px;
+}
+
+:root.android #permission-warning {
+  margin-bottom: 18px;
+  padding: 16px;
+}
+
+:root.android #permission-warning p {
+  font-size: 17px;
+}
+
+:root.android #permission-warning button {
+  min-height: 56px;
+  font-size: 18px;
+}
+
 header {
   margin-bottom: 8px;
   color: #666;
