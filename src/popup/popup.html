@@ -2,10 +2,10 @@
 <html lang="ja">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
+    <main class="popup-root">
     <div id="permission-warning" hidden>
       <p>このタブへのアクセスが許可されていません。</p>
       <button id="grant" type="button">サイトへのアクセスを許可</button>
@@ -36,6 +36,7 @@
       <button id="clear-default" type="button" hidden>既定値を削除</button>
     </div>
     <p id="default-note" class="note" hidden></p>
+    </main>
 
     <script src="popup.js"></script>
   </body>

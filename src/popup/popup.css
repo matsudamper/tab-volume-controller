@@ -10,16 +10,25 @@
 }
 
 body {
-  width: max(360px, 100%);
   margin: 0;
-  padding: 12px;
-  font: 13px/1.5 system-ui, "Segoe UI", "Yu Gothic UI", sans-serif;
+  padding: 0;
 }
 
-@media (max-device-width: 480px) {
-  body {
-    width: 100%;
-  }
+.popup-root {
+  font-size: 13px;
+  line-height: 1.5;
+  width: 100%;
+  min-width: 27.7em;
+  padding: 12px;
+}
+
+body.popup-panel .popup-root {
+  min-width: 0;
+}
+
+:root.mobile .popup-root {
+  width: 100%;
+  min-width: 0;
 }
 
 header {
