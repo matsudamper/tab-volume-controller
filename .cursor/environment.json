@@ -1,0 +1,4 @@
+{
+  "name": "Tab Volume Controller",
+  "install": "bash .cursor/install.sh"
+}
