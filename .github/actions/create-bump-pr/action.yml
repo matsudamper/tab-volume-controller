@@ -28,6 +28,8 @@ runs:
         NEXT: ${{ inputs.next }}
         REASON: ${{ inputs.reason }}
       run: |
+        set -euo pipefail
+
         branch="chore/bump-version-${NEXT}"
         existing_pr=$(gh pr list --head "$branch" --state open --json number -q '.[0].number // empty')
         if [ -n "$existing_pr" ]; then
@@ -52,25 +54,32 @@ runs:
 
         git config user.name "github-actions[bot]"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git checkout -b "$branch"
+        git fetch origin main "$branch" 2>/dev/null || git fetch origin main
 
-        node -e "
-          const fs = require('fs');
-          const path = './src/manifest.json';
-          let content = fs.readFileSync(path, 'utf8');
-          content = content.replace(/\"version\": \"[^\"]+\"/, '\"version\": \"${NEXT}\"');
-          fs.writeFileSync(path, content);
-        "
+        if git ls-remote --heads origin "$branch" | grep -q .; then
+          git checkout -B "$branch" "origin/${branch}"
+        else
+          git checkout -B "$branch" origin/main
+          node -e "
+            const fs = require('fs');
+            const path = './src/manifest.json';
+            let content = fs.readFileSync(path, 'utf8');
+            content = content.replace(/\"version\": \"[^\"]+\"/, '\"version\": \"${NEXT}\"');
+            fs.writeFileSync(path, content);
+          "
+          git add src/manifest.json
+          git commit -m "chore: bump version to ${NEXT}"
+          git push origin "$branch"
+        fi
 
-        git add src/manifest.json
-        git commit -m "chore: bump version to ${NEXT}"
-        git push origin "$branch"
-
-        gh pr create \
+        if ! gh pr create \
           --base main \
           --head "$branch" \
           --title "chore: bump version to ${NEXT}" \
-          --body "${REASON}"
+          --body "${REASON}"; then
+          echo "::error::GitHub Actions に PR 作成権限がありません。Settings → Actions → General →「Allow GitHub Actions to create and approve pull requests」を有効にしてください。"
+          exit 1
+        fi
 
         new_pr=$(gh pr list --head "$branch" --state open --json number -q '.[0].number')
         echo "created=true" >> "$GITHUB_OUTPUT"
