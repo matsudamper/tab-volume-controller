@@ -58,21 +58,14 @@ jobs:
           branch="release/v${VERSION}"
           existing_pr=$(gh pr list --head "$branch" --state open --json number -q '.[0].number // empty')
 
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # main の最新コミットを release ブランチへ反映し、PR Build を再実行させる
+          git push origin "HEAD:refs/heads/${branch}"
 
           if [ -n "$existing_pr" ]; then
-            echo "Updating draft PR #${existing_pr}"
-            git fetch origin "$branch" main
-            git checkout "$branch"
-            git merge origin/main --no-edit
-            git commit --allow-empty -m "chore: rebuild release artifacts for v${VERSION}"
-            git push origin "$branch"
+            echo "Updated draft PR #${existing_pr}"
             exit 0
           fi
 
-          git checkout -b "$branch"
-          git push origin "$branch"
           gh pr create \
             --draft \
             --base main \
