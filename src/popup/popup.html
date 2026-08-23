@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
+    <main class="popup-root">
     <div id="permission-warning" hidden>
       <p>このタブへのアクセスが許可されていません。</p>
       <button id="grant" type="button">サイトへのアクセスを許可</button>
@@ -15,9 +16,11 @@
       <span id="origin">-</span>
     </header>
 
-    <div class="row">
+    <div class="row volume">
       <button id="mute" type="button" class="icon" aria-pressed="false" title="ミュート">🔊</button>
-      <input id="slider" type="range" min="0" max="200" step="1" value="100" />
+      <div class="slider-wrap">
+        <input id="slider" type="range" min="0" max="200" step="1" value="100" />
+      </div>
       <output id="value">100%</output>
     </div>
 
@@ -34,6 +37,7 @@
       <button id="clear-default" type="button" hidden>既定値を削除</button>
     </div>
     <p id="default-note" class="note" hidden></p>
+    </main>
 
     <script src="popup.js"></script>
   </body>
