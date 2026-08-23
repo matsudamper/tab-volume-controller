@@ -51,8 +51,6 @@ jobs:
           message: |
             ## PR ビルド成果物
 
-            この PR の最新ビルドから生成された拡張機能です。
-
             | 項目 | 値 |
             | --- | --- |
             | バージョン | `${{ steps.version.outputs.version }}` |
