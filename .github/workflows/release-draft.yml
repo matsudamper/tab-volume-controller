@@ -20,56 +20,21 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Read version
-        id: version
-        run: |
-          version=$(node -p "require('./src/manifest.json').version")
-          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Plan release action
+        id: plan
+        uses: ./.github/actions/release-plan
 
-      - name: Check release status
-        id: release
-        env:
-          GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          if ! gh release view "v${VERSION}" >/dev/null 2>&1; then
-            echo "published=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
+      - name: Create version bump PR
+        if: steps.plan.outputs.published == 'true' && steps.plan.outputs.already_bumped != 'true'
+        uses: ./.github/actions/create-bump-pr
+        with:
+          released: ${{ steps.plan.outputs.version }}
+          next: ${{ steps.plan.outputs.next }}
+          reason: v${{ steps.plan.outputs.version }} は公開済みのため、次の開発バージョン ${{ steps.plan.outputs.next }} に更新します。
 
-          is_draft=$(gh release view "v${VERSION}" --json isDraft -q '.isDraft')
-          if [ "$is_draft" = "true" ]; then
-            echo "published=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "published=true" >> "$GITHUB_OUTPUT"
-            echo "v${VERSION} is already published."
-          fi
-
-      - name: Skip when already published
-        if: steps.release.outputs.published == 'true'
-        run: echo "v${{ steps.version.outputs.version }} は既にリリース済みです。"
-
-      - name: Create or update draft release PR
-        if: steps.release.outputs.published != 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ steps.version.outputs.version }}
-          SHA: ${{ github.sha }}
-        run: |
-          branch="release/v${VERSION}"
-          existing_pr=$(gh pr list --head "$branch" --state open --json number -q '.[0].number // empty')
-
-          # このワークフローを起動したコミットを release ブランチへ反映し、PR Build を再実行させる
-          git push origin "${SHA}:refs/heads/${branch}"
-
-          if [ -n "$existing_pr" ]; then
-            echo "Updated draft PR #${existing_pr}"
-            exit 0
-          fi
-
-          gh pr create \
-            --draft \
-            --base main \
-            --head "$branch" \
-            --title "release: v${VERSION}" \
-            --body "main の更新に追従するリリース用ドラフト PR です。PR ビルド成果物を確認し、GitHub Releases から手動で公開してください。公開後、次バージョンへの更新 PR が自動作成されます。"
+      - name: Sync draft release PR
+        if: steps.plan.outputs.published != 'true'
+        uses: ./.github/actions/sync-release-draft
+        with:
+          version: ${{ steps.plan.outputs.version }}
+          sha: ${{ github.sha }}

@@ -1,0 +1,77 @@
+name: Create bump version PR
+description: manifest.json を次パッチバージョンに上げる PR を作成する
+inputs:
+  released:
+    description: 公開済みバージョン
+    required: true
+  next:
+    description: bump 先のバージョン
+    required: true
+  reason:
+    description: PR 本文
+    required: true
+outputs:
+  created:
+    description: 新規 PR を作成したか
+    value: ${{ steps.create.outputs.created }}
+  pr_number:
+    description: 作成または既存の PR 番号
+    value: ${{ steps.create.outputs.pr_number }}
+runs:
+  using: composite
+  steps:
+    - id: create
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        RELEASED: ${{ inputs.released }}
+        NEXT: ${{ inputs.next }}
+        REASON: ${{ inputs.reason }}
+      run: |
+        branch="chore/bump-version-${NEXT}"
+        existing_pr=$(gh pr list --head "$branch" --state open --json number -q '.[0].number // empty')
+        if [ -n "$existing_pr" ]; then
+          echo "created=false" >> "$GITHUB_OUTPUT"
+          echo "pr_number=${existing_pr}" >> "$GITHUB_OUTPUT"
+          echo "Bump PR already exists: #${existing_pr}"
+          exit 0
+        fi
+
+        current=$(node -p "require('./src/manifest.json').version")
+        already_bumped=$(node -p "
+          const current = '${current}'.split('.').map(Number);
+          const next = '${NEXT}'.split('.').map(Number);
+          const cmp = (a, b) => (a[0] - b[0]) || (a[1] - b[1]) || (a[2] - b[2]);
+          cmp(current, next) >= 0;
+        ")
+        if [ "$already_bumped" = "true" ]; then
+          echo "created=false" >> "$GITHUB_OUTPUT"
+          echo "manifest.json は既に ${NEXT} 以降です。"
+          exit 0
+        fi
+
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git checkout -b "$branch"
+
+        node -e "
+          const fs = require('fs');
+          const path = './src/manifest.json';
+          let content = fs.readFileSync(path, 'utf8');
+          content = content.replace(/\"version\": \"[^\"]+\"/, '\"version\": \"${NEXT}\"');
+          fs.writeFileSync(path, content);
+        "
+
+        git add src/manifest.json
+        git commit -m "chore: bump version to ${NEXT}"
+        git push origin "$branch"
+
+        gh pr create \
+          --base main \
+          --head "$branch" \
+          --title "chore: bump version to ${NEXT}" \
+          --body "${REASON}"
+
+        new_pr=$(gh pr list --head "$branch" --state open --json number -q '.[0].number')
+        echo "created=true" >> "$GITHUB_OUTPUT"
+        echo "pr_number=${new_pr}" >> "$GITHUB_OUTPUT"

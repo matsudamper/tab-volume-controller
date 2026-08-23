@@ -1,0 +1,60 @@
+name: Release plan
+description: manifest のバージョンと GitHub Release の公開状態を判定する
+inputs:
+  version:
+    description: 判定対象のバージョン（省略時は manifest.json を使用）
+    required: false
+    default: ""
+outputs:
+  version:
+    description: 判定対象のバージョン
+    value: ${{ steps.plan.outputs.version }}
+  published:
+    description: 対象バージョンが GitHub Release で公開済みか
+    value: ${{ steps.plan.outputs.published }}
+  next:
+    description: 次のパッチバージョン
+    value: ${{ steps.plan.outputs.next }}
+  already_bumped:
+    description: manifest.json が next 以降か
+    value: ${{ steps.plan.outputs.already_bumped }}
+runs:
+  using: composite
+  steps:
+    - id: plan
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        INPUT_VERSION: ${{ inputs.version }}
+      run: |
+        version="${INPUT_VERSION}"
+        if [ -z "$version" ]; then
+          version=$(node -p "require('./src/manifest.json').version")
+        fi
+
+        published=false
+        if gh release view "v${version}" >/dev/null 2>&1; then
+          is_draft=$(gh release view "v${version}" --json isDraft -q '.isDraft')
+          if [ "$is_draft" = "false" ]; then
+            published=true
+          fi
+        fi
+
+        next=$(node -p "
+          const parts = '${version}'.split('.').map(Number);
+          parts[2] = (parts[2] || 0) + 1;
+          parts.join('.');
+        ")
+
+        current=$(node -p "require('./src/manifest.json').version")
+        already_bumped=$(node -p "
+          const current = '${current}'.split('.').map(Number);
+          const next = '${next}'.split('.').map(Number);
+          const cmp = (a, b) => (a[0] - b[0]) || (a[1] - b[1]) || (a[2] - b[2]);
+          cmp(current, next) >= 0;
+        ")
+
+        echo "version=${version}" >> "$GITHUB_OUTPUT"
+        echo "published=${published}" >> "$GITHUB_OUTPUT"
+        echo "next=${next}" >> "$GITHUB_OUTPUT"
+        echo "already_bumped=${already_bumped}" >> "$GITHUB_OUTPUT"

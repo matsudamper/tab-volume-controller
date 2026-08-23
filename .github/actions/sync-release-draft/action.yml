@@ -1,0 +1,43 @@
+name: Sync release draft PR
+description: トリガーコミットを release ブランチへ反映し Draft PR を維持する
+inputs:
+  version:
+    description: リリース対象バージョン
+    required: true
+  sha:
+    description: release ブランチへ反映するコミット
+    required: true
+outputs:
+  pr_number:
+    description: 更新または作成した Draft PR 番号
+    value: ${{ steps.sync.outputs.pr_number }}
+runs:
+  using: composite
+  steps:
+    - id: sync
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        VERSION: ${{ inputs.version }}
+        SHA: ${{ inputs.sha }}
+      run: |
+        branch="release/v${VERSION}"
+        existing_pr=$(gh pr list --head "$branch" --state open --json number -q '.[0].number // empty')
+
+        git push origin "${SHA}:refs/heads/${branch}"
+
+        if [ -n "$existing_pr" ]; then
+          echo "pr_number=${existing_pr}" >> "$GITHUB_OUTPUT"
+          echo "Updated draft PR #${existing_pr}"
+          exit 0
+        fi
+
+        gh pr create \
+          --draft \
+          --base main \
+          --head "$branch" \
+          --title "release: v${VERSION}" \
+          --body "main の更新に追従するリリース用ドラフト PR です。PR ビルド成果物を確認し、GitHub Releases から手動で公開してください。公開後、次バージョンへの更新 PR が自動作成されます。"
+
+        new_pr=$(gh pr list --head "$branch" --state open --json number -q '.[0].number')
+        echo "pr_number=${new_pr}" >> "$GITHUB_OUTPUT"
