@@ -50,10 +50,6 @@ jobs:
           message: |
             ## PR ビルド成果物
 
-            | 項目 | 値 |
-            | --- | --- |
-            | バージョン | `${{ steps.version.outputs.version }}` |
-            | ファイル名 | `tab-volume-controller-${{ steps.version.outputs.version }}.xpi` |
+            | ファイル名 | [`tab-volume-controller-${{ steps.version.outputs.version }}.xpi`](${{ steps.upload.outputs.artifact-url }}) |
             | ビルド | [Actions 実行ログ](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) |
 
-            **[拡張機能をダウンロード](${{ steps.upload.outputs.artifact-url }})**
