@@ -1,0 +1,77 @@
+name: Release Bump
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Compute next version
+        id: versions
+        run: |
+          released="${{ github.event.release.tag_name }}"
+          released="${released#v}"
+          next=$(node -p "
+            const parts = '${released}'.split('.').map(Number);
+            parts[2] = (parts[2] || 0) + 1;
+            parts.join('.');
+          ")
+          current=$(node -p "require('./src/manifest.json').version")
+          already_bumped=$(node -p "
+            const current = '${current}'.split('.').map(Number);
+            const next = '${next}'.split('.').map(Number);
+            const cmp = (a, b) => (a[0] - b[0]) || (a[1] - b[1]) || (a[2] - b[2]);
+            cmp(current, next) >= 0;
+          ")
+
+          echo "released=$released" >> "$GITHUB_OUTPUT"
+          echo "next=$next" >> "$GITHUB_OUTPUT"
+          echo "already_bumped=$already_bumped" >> "$GITHUB_OUTPUT"
+
+      - name: Skip when already bumped
+        if: steps.versions.outputs.already_bumped == 'true'
+        run: echo "manifest.json は既に ${{ steps.versions.outputs.next }} 以降です。"
+
+      - name: Create version bump PR
+        if: steps.versions.outputs.already_bumped != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASED: ${{ steps.versions.outputs.released }}
+          NEXT: ${{ steps.versions.outputs.next }}
+        run: |
+          branch="chore/bump-version-${NEXT}"
+          existing_pr=$(gh pr list --head "$branch" --state open --json number -q '.[0].number // empty')
+          if [ -n "$existing_pr" ]; then
+            echo "Bump PR already exists: #${existing_pr}"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+
+          node -e "
+            const fs = require('fs');
+            const path = './src/manifest.json';
+            let content = fs.readFileSync(path, 'utf8');
+            content = content.replace(/\"version\": \"[^\"]+\"/, '\"version\": \"${NEXT}\"');
+            fs.writeFileSync(path, content);
+          "
+
+          git add src/manifest.json
+          git commit -m "chore: bump version to ${NEXT}"
+          git push origin "$branch"
+
+          gh pr create \
+            --base main \
+            --head "$branch" \
+            --title "chore: bump version to ${NEXT}" \
+            --body "v${RELEASED} のリリース公開後、次の開発バージョン ${NEXT} に更新します。"

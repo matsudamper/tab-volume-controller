@@ -1,0 +1,76 @@
+name: Release Prepare
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Read version
+        id: version
+        run: |
+          version=$(node -p "require('./src/manifest.json').version")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Check release status
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          if ! gh release view "v${VERSION}" >/dev/null 2>&1; then
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          is_draft=$(gh release view "v${VERSION}" --json isDraft -q '.isDraft')
+          if [ "$is_draft" = "true" ]; then
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "v${VERSION} is already published."
+          fi
+
+      - name: Skip when already published
+        if: steps.release.outputs.published == 'true'
+        run: echo "v${{ steps.version.outputs.version }} は既にリリース済みです。"
+
+      - name: Create or update draft release PR
+        if: steps.release.outputs.published != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          branch="release/v${VERSION}"
+          existing_pr=$(gh pr list --head "$branch" --state open --json number -q '.[0].number // empty')
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if [ -n "$existing_pr" ]; then
+            echo "Updating draft PR #${existing_pr}"
+            git fetch origin "$branch" main
+            git checkout "$branch"
+            git merge origin/main --no-edit
+            git commit --allow-empty -m "chore: rebuild release artifacts for v${VERSION}"
+            git push origin "$branch"
+            exit 0
+          fi
+
+          git checkout -b "$branch"
+          git push origin "$branch"
+          gh pr create \
+            --draft \
+            --base main \
+            --head "$branch" \
+            --title "release: v${VERSION}" \
+            --body "リリース v${VERSION} のドラフト PR です。PR ビルド成果物を確認し、GitHub Releases から手動で公開してください。公開後、次バージョンへの更新 PR が自動作成されます。"
