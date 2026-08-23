@@ -54,12 +54,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.version.outputs.version }}
+          SHA: ${{ github.sha }}
         run: |
           branch="release/v${VERSION}"
           existing_pr=$(gh pr list --head "$branch" --state open --json number -q '.[0].number // empty')
 
-          # main の最新コミットを release ブランチへ反映し、PR Build を再実行させる
-          git push origin "HEAD:refs/heads/${branch}"
+          # このワークフローを起動したコミットを release ブランチへ反映し、PR Build を再実行させる
+          git push origin "${SHA}:refs/heads/${branch}"
 
           if [ -n "$existing_pr" ]; then
             echo "Updated draft PR #${existing_pr}"
