@@ -6,6 +6,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   build:
@@ -34,7 +35,7 @@ jobs:
           echo "xpi=$xpi_path" >> "$GITHUB_OUTPUT"
 
       - name: Upload extension artifact
-        id: upload_xpi
+        id: upload
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: tab-volume-controller-${{ steps.version.outputs.version }}
@@ -43,16 +44,26 @@ jobs:
           if-no-files-found: error
 
       - name: Generate download QR code
-        if: github.event_name == 'pull_request'
         run: |
           pip install "qrcode[pil]" --quiet
-          python3 -c "import qrcode, sys; qrcode.make(sys.argv[1]).save('qrcode-github.png')" "${{ steps.upload_xpi.outputs.artifact-url }}"
+          python3 -c "import qrcode, sys; qrcode.make(sys.argv[1]).save('qrcode-github.png')" "${{ steps.upload.outputs.artifact-url }}"
 
       - name: Upload download QR artifact
-        if: github.event_name == 'pull_request'
         id: github_qr_artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: xpi-qr-code-github
           path: qrcode-github.png
           archive: false
+
+      - name: Comment PR with artifact link
+        uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b # v3.0.1
+        with:
+          comment-tag: pr-build-artifact
+          message: |
+            ## PR ビルド成果物
+
+            | | ダウンロード | QRコード |
+            | --- | --- | --- |
+            | `tab-volume-controller-${{ steps.version.outputs.version }}.xpi` | [Download](${{ steps.upload.outputs.artifact-url }}) | [View](${{ steps.github_qr_artifact.outputs.artifact-url }}) |
+            | ビルド | [Actions 実行ログ](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) | |
