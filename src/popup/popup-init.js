@@ -1,19 +1,24 @@
 "use strict";
 
-// パネル幅だけでレイアウトを決める（Android 等の OS 判定は使わない）
 window.applyPopupLayout = function applyPopupLayout() {
+  const mobile = window.matchMedia("(max-device-width: 480px)").matches;
+  if (mobile) {
+    document.documentElement.classList.add("mobile");
+    document.body.classList.add("popup-panel");
+    return;
+  }
+
+  document.documentElement.classList.remove("mobile");
   const hostWidth = window.innerWidth;
-  const fillPanel = hostWidth >= 250;
-  const touchUI = hostWidth <= 480;
-
-  document.body.classList.toggle("popup-panel", fillPanel);
-  document.documentElement.classList.toggle("mobile", touchUI);
-
-  if (fillPanel && touchUI && !document.querySelector('meta[name="viewport"]')) {
-    const viewport = document.createElement("meta");
-    viewport.name = "viewport";
-    viewport.content = "width=device-width, initial-scale=1";
-    document.head.appendChild(viewport);
+  if (hostWidth < 250) {
+    // ツールバー初回表示: min-width でポップアップ自体を広げる
+    document.body.classList.remove("popup-panel");
+  } else if (hostWidth < 360) {
+    // オーバーフローメニュー等の中くらいのパネル: 100% で埋めて横スクロールを防ぐ
+    document.body.classList.add("popup-panel");
+  } else {
+    // 十分広いパネルだけ 100% で埋める
+    document.body.classList.toggle("popup-panel", hostWidth > 360);
   }
 };
 
