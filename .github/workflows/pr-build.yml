@@ -64,7 +64,8 @@ jobs:
           message: |
             ## PR ビルド成果物
 
-            | | ダウンロード | QRコード |
-            | --- | --- | --- |
-            | `tab-volume-controller-${{ steps.version.outputs.version }}.xpi` | [Download](${{ steps.upload.outputs.artifact-url }}) | [View](${{ steps.github_qr_artifact.outputs.artifact-url }}) |
-            | ビルド | [Actions 実行ログ](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) | |
+            **`tab-volume-controller-${{ steps.version.outputs.version }}.xpi`**
+
+            - [Download](${{ steps.upload.outputs.artifact-url }})
+            - [QRコード](${{ steps.github_qr_artifact.outputs.artifact-url }})
+            - [Actions 実行ログ](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
