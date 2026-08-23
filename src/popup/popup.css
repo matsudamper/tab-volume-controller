@@ -3,6 +3,11 @@
   --accent: #2563eb;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
   width: 280px;
   margin: 0;
