@@ -58,5 +58,3 @@ jobs:
             | ビルド | [Actions 実行ログ](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) |
 
             **[拡張機能をダウンロード](${{ steps.upload.outputs.artifact-url }})**
-
-            > GitHub にログインしている必要があります。
