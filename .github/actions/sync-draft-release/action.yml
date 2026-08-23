@@ -1,0 +1,43 @@
+name: Sync draft release
+description: 拡張機能をビルドし GitHub Draft Release を作成または更新する
+inputs:
+  version:
+    description: リリース対象バージョン
+    required: true
+outputs:
+  release_url:
+    description: Draft Release の URL
+    value: ${{ steps.sync.outputs.release_url }}
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: "20"
+
+    - id: sync
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        VERSION: ${{ inputs.version }}
+      run: |
+        set -euo pipefail
+
+        tag="v${VERSION}"
+
+        npx web-ext build --source-dir=src --artifacts-dir=web-ext-artifacts --overwrite-dest
+        built_zip=$(ls web-ext-artifacts/*.zip)
+        xpi_path="web-ext-artifacts/tab-volume-controller-${VERSION}.xpi"
+        cp "$built_zip" "$xpi_path"
+        unzip -l "$xpi_path" | grep -q ' manifest.json$'
+
+        if gh release view "$tag" >/dev/null 2>&1; then
+          gh release upload "$tag" "$xpi_path" --clobber
+          echo "Updated draft release ${tag}"
+        else
+          gh release create "$tag" "$xpi_path" --draft --title "$tag"
+          echo "Created draft release ${tag}"
+        fi
+
+        release_url=$(gh release view "$tag" --json url -q .url)
+        echo "release_url=${release_url}" >> "$GITHUB_OUTPUT"

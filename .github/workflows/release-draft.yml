@@ -17,8 +17,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
 
       - name: Plan release action
         id: plan
@@ -32,9 +30,8 @@ jobs:
           next: ${{ steps.plan.outputs.next }}
           reason: v${{ steps.plan.outputs.version }} は公開済みのため、次の開発バージョン ${{ steps.plan.outputs.next }} に更新します。
 
-      - name: Sync draft release PR
+      - name: Sync draft release
         if: steps.plan.outputs.published != 'true'
-        uses: ./.github/actions/sync-release-draft
+        uses: ./.github/actions/sync-draft-release
         with:
           version: ${{ steps.plan.outputs.version }}
-          sha: ${{ github.sha }}
