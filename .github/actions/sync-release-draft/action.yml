@@ -21,6 +21,8 @@ runs:
         VERSION: ${{ inputs.version }}
         SHA: ${{ inputs.sha }}
       run: |
+        set -euo pipefail
+
         branch="release/v${VERSION}"
         existing_pr=$(gh pr list --head "$branch" --state open --json number -q '.[0].number // empty')
 
@@ -32,12 +34,15 @@ runs:
           exit 0
         fi
 
-        gh pr create \
+        if ! gh pr create \
           --draft \
           --base main \
           --head "$branch" \
           --title "release: v${VERSION}" \
-          --body "main の更新に追従するリリース用ドラフト PR です。PR ビルド成果物を確認し、GitHub Releases から手動で公開してください。公開後、次バージョンへの更新 PR が自動作成されます。"
+          --body "main の更新に追従するリリース用ドラフト PR です。PR ビルド成果物を確認し、GitHub Releases から手動で公開してください。公開後、次バージョンへの更新 PR が自動作成されます。"; then
+          echo "::error::GitHub Actions に PR 作成権限がありません。Settings → Actions → General →「Allow GitHub Actions to create and approve pull requests」を有効にしてください。"
+          exit 1
+        fi
 
         new_pr=$(gh pr list --head "$branch" --state open --json number -q '.[0].number')
         echo "pr_number=${new_pr}" >> "$GITHUB_OUTPUT"
