@@ -1,8 +1,7 @@
 name: Release
 
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -17,11 +16,31 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Read version
+      - name: Bump patch version
         id: version
         run: |
-          version=$(node -p "require('./src/manifest.json').version")
+          version=$(node -p "
+            const fs = require('fs');
+            const path = './src/manifest.json';
+            let content = fs.readFileSync(path, 'utf8');
+            const match = content.match(/\"version\": \"([^\"]+)\"/);
+            if (!match) throw new Error('version not found');
+            const parts = match[1].split('.').map(Number);
+            parts[2] = (parts[2] || 0) + 1;
+            const newVersion = parts.join('.');
+            content = content.replace(/\"version\": \"[^\"]+\"/, '\"version\": \"' + newVersion + '\"');
+            fs.writeFileSync(path, content);
+            newVersion;
+          ")
           echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Commit version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/manifest.json
+          git commit -m "chore: bump version to ${{ steps.version.outputs.version }}"
+          git push
 
       - name: Build extension zip
         run: npx web-ext build --source-dir=src --artifacts-dir=web-ext-artifacts --overwrite-dest
