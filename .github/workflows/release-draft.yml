@@ -1,14 +1,19 @@
-name: Release Prepare
+name: Release Draft
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [main]
+
+concurrency:
+  group: release-draft-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: write
   pull-requests: write
 
 jobs:
-  prepare:
+  update-draft:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -73,4 +78,4 @@ jobs:
             --base main \
             --head "$branch" \
             --title "release: v${VERSION}" \
-            --body "リリース v${VERSION} のドラフト PR です。PR ビルド成果物を確認し、GitHub Releases から手動で公開してください。公開後、次バージョンへの更新 PR が自動作成されます。"
+            --body "main の更新に追従するリリース用ドラフト PR です。PR ビルド成果物を確認し、GitHub Releases から手動で公開してください。公開後、次バージョンへの更新 PR が自動作成されます。"
