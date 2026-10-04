@@ -1,14 +1,11 @@
 "use strict";
 
-function applyPopupLayout() {
-  const mobile = window.matchMedia("(max-device-width: 480px)").matches;
-  if (mobile) {
-    document.documentElement.classList.add("mobile");
-    document.body.classList.add("popup-panel");
-    return;
-  }
+function applyAndroidLayout() {
+  document.documentElement.classList.add("mobile");
+  document.body.classList.add("popup-panel");
+}
 
-  document.documentElement.classList.remove("mobile");
+function applyDesktopLayout() {
   const hostWidth = window.innerWidth;
   if (hostWidth < 250) {
     // ツールバー初回表示: min-width でポップアップ自体を広げる
@@ -22,13 +19,13 @@ function applyPopupLayout() {
   }
 }
 
-applyPopupLayout();
-requestAnimationFrame(applyPopupLayout);
-
 browser.runtime.getPlatformInfo().then(({ os }) => {
   if (os === "android") {
-    document.documentElement.classList.add("mobile");
+    applyAndroidLayout();
+    return;
   }
+  applyDesktopLayout();
+  requestAnimationFrame(applyDesktopLayout);
 });
 
 const $ = (id) => document.getElementById(id);
