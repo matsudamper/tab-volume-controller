@@ -44,18 +44,13 @@ jobs:
           archive: false
           if-no-files-found: error
 
-      - name: Generate download QR code
-        run: |
-          pip install "qrcode[pil]" --quiet
-          python3 -c "import qrcode, sys; qrcode.make(sys.argv[1]).save('qrcode-github.png')" "${{ steps.upload.outputs.artifact-url }}"
-
-      - name: Upload download QR artifact
+      - name: Upload download QR code
         id: github_qr_artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: matsudamper/actions/upload-qr-code@7577a0a7bddd81843525c1f8539b119bdaa7825c # v1.1.0
         with:
-          name: xpi-qr-code-github
-          path: qrcode-github.png
-          archive: false
+          url: ${{ steps.upload.outputs.artifact-url }}
+          output_path: qrcode-github.png
+          artifact_name: xpi-qr-code-github
 
       - name: Comment PR with artifact link
         uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b # v3.0.1
