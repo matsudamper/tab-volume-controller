@@ -3,6 +3,14 @@ name: PR Build
 on:
   pull_request:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      extension:
+        description: ビルドする拡張
+        required: true
+        type: choice
+        options:
+          - tab-volume-controller
 
 permissions:
   contents: read
@@ -10,23 +18,14 @@ permissions:
   pull-requests: write
 
 jobs:
-  list-extensions:
-    runs-on: ubuntu-latest
-    outputs:
-      extensions: ${{ steps.list.outputs.extensions }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - id: list
-        uses: ./.github/actions/list-extensions
-
   build:
-    needs: list-extensions
     runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_dispatch' || matrix.extension == inputs.extension
     strategy:
       fail-fast: false
       matrix:
-        extension: ${{ fromJson(needs.list-extensions.outputs.extensions) }}
+        extension:
+          - tab-volume-controller
     defaults:
       run:
         working-directory: extensions/${{ matrix.extension }}
@@ -75,6 +74,7 @@ jobs:
           artifact_name: xpi-qr-code-github-${{ matrix.extension }}
 
       - name: Comment PR with artifact link
+        if: github.event_name == 'pull_request'
         uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b # v3.0.1
         with:
           comment-tag: pr-build-artifact-${{ matrix.extension }}

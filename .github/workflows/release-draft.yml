@@ -3,6 +3,14 @@ name: Release Draft
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      extension:
+        description: 下書きを更新する拡張
+        required: true
+        type: choice
+        options:
+          - tab-volume-controller
 
 concurrency:
   group: release-draft-${{ github.ref }}
@@ -13,23 +21,14 @@ permissions:
   pull-requests: write
 
 jobs:
-  list-extensions:
-    runs-on: ubuntu-latest
-    outputs:
-      extensions: ${{ steps.list.outputs.extensions }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - id: list
-        uses: ./.github/actions/list-extensions
-
   update-draft:
-    needs: list-extensions
     runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_dispatch' || matrix.extension == inputs.extension
     strategy:
       fail-fast: false
       matrix:
-        extension: ${{ fromJson(needs.list-extensions.outputs.extensions) }}
+        extension:
+          - tab-volume-controller
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 

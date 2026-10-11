@@ -2,7 +2,7 @@
 
 Firefox 拡張をまとめて置くリポジトリ。
 
-拡張は `extensions/<name>/` に置く。ビルドとリリースの GitHub Actions は、そのディレクトリをカレントにして `src/manifest.json` を読む。
+拡張は `extensions/<name>/` に置く。ビルドとリリースの GitHub Actions は、そのディレクトリをカレントにして `src/manifest.json` を読む。対象にする拡張は、各ワークフローの `extension`（`type: choice`）と matrix に名前を追加する。
 
 ## 拡張
 
