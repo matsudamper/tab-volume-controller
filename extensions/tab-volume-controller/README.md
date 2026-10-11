@@ -55,6 +55,8 @@ Firefox には「タブの音量」を変える API がないため、ページ�
 
 ## 開発
 
+このディレクトリ (`extensions/tab-volume-controller`) で実行する。
+
 ```sh
 npx web-ext lint --source-dir=src    # manifest とコードの検証
 npx web-ext run --source-dir=src     # 一時プロファイルの Firefox で起動
