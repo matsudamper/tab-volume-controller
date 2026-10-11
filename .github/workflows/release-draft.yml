@@ -13,25 +13,45 @@ permissions:
   pull-requests: write
 
 jobs:
-  update-draft:
+  list-extensions:
     runs-on: ubuntu-latest
+    outputs:
+      extensions: ${{ steps.list.outputs.extensions }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - id: list
+        uses: ./.github/actions/list-extensions
+
+  update-draft:
+    needs: list-extensions
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        extension: ${{ fromJson(needs.list-extensions.outputs.extensions) }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Plan release action
         id: plan
         uses: ./.github/actions/release-plan
+        with:
+          extension: ${{ matrix.extension }}
 
       - name: Create version bump PR
         if: steps.plan.outputs.published == 'true' && steps.plan.outputs.already_bumped != 'true'
         uses: ./.github/actions/create-bump-pr
         with:
+          extension: ${{ matrix.extension }}
           released: ${{ steps.plan.outputs.version }}
           next: ${{ steps.plan.outputs.next }}
-          reason: v${{ steps.plan.outputs.version }} は公開済みのため、次の開発バージョン ${{ steps.plan.outputs.next }} に更新します。
+          reason: ${{ matrix.extension }} の v${{ steps.plan.outputs.version }} は公開済みのため、次の開発バージョン ${{ steps.plan.outputs.next }} に更新します。
 
       - name: Sync draft release
         if: steps.plan.outputs.published != 'true'
         uses: ./.github/actions/sync-draft-release
         with:
+          extension: ${{ matrix.extension }}
           version: ${{ steps.plan.outputs.version }}
+          tag: ${{ steps.plan.outputs.tag }}

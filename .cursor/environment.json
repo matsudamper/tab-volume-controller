@@ -1,4 +1,4 @@
 {
-  "name": "Tab Volume Controller",
+  "name": "firefox-extensions",
   "install": "bash .cursor/install.sh"
 }
