@@ -1,8 +1,14 @@
 name: Sync draft release
 description: 拡張機能をビルドし GitHub Draft Release を作成または更新する
 inputs:
+  extension:
+    description: extensions/ 以下のディレクトリ名
+    required: true
   version:
     description: リリース対象バージョン
+    required: true
+  tag:
+    description: 作成または更新する GitHub Release タグ
     required: true
 outputs:
   release_url:
@@ -17,27 +23,28 @@ runs:
 
     - id: sync
       shell: bash
+      working-directory: ${{ github.workspace }}/extensions/${{ inputs.extension }}
       env:
         GH_TOKEN: ${{ github.token }}
+        EXTENSION: ${{ inputs.extension }}
         VERSION: ${{ inputs.version }}
+        TAG: ${{ inputs.tag }}
       run: |
         set -euo pipefail
 
-        tag="v${VERSION}"
-
         npx web-ext build --source-dir=src --artifacts-dir=web-ext-artifacts --overwrite-dest
         built_zip=$(ls web-ext-artifacts/*.zip)
-        xpi_path="web-ext-artifacts/tab-volume-controller-${VERSION}.xpi"
+        xpi_path="web-ext-artifacts/${EXTENSION}-${VERSION}.xpi"
         cp "$built_zip" "$xpi_path"
         unzip -l "$xpi_path" | grep -q ' manifest.json$'
 
-        if gh release view "$tag" >/dev/null 2>&1; then
-          gh release upload "$tag" "$xpi_path" --clobber
-          echo "Updated draft release ${tag}"
+        if gh release view "$TAG" >/dev/null 2>&1; then
+          gh release upload "$TAG" "$xpi_path" --clobber
+          echo "Updated draft release ${TAG}"
         else
-          gh release create "$tag" "$xpi_path" --draft --title "$tag"
-          echo "Created draft release ${tag}"
+          gh release create "$TAG" "$xpi_path" --draft --title "$TAG"
+          echo "Created draft release ${TAG}"
         fi
 
-        release_url=$(gh release view "$tag" --json url -q .url)
+        release_url=$(gh release view "$TAG" --json url -q .url)
         echo "release_url=${release_url}" >> "$GITHUB_OUTPUT"
