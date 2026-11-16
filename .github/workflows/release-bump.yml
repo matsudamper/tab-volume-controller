@@ -18,18 +18,30 @@ jobs:
         id: released
         run: |
           tag="${{ github.event.release.tag_name }}"
-          echo "version=${tag#v}" >> "$GITHUB_OUTPUT"
+          if [[ "$tag" =~ ^(.+)-v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            echo "extension=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
+            echo "version=${BASH_REMATCH[2]}" >> "$GITHUB_OUTPUT"
+          # 単一拡張だった頃のタグ vX.Y.Z は tab-volume-controller のリリース
+          elif [[ "$tag" =~ ^v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            echo "extension=tab-volume-controller" >> "$GITHUB_OUTPUT"
+            echo "version=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::未知のタグ形式: ${tag}"
+            exit 1
+          fi
 
       - name: Plan bump action
         id: plan
         uses: ./.github/actions/release-plan
         with:
+          extension: ${{ steps.released.outputs.extension }}
           version: ${{ steps.released.outputs.version }}
 
       - name: Create version bump PR
         if: steps.plan.outputs.already_bumped != 'true'
         uses: ./.github/actions/create-bump-pr
         with:
+          extension: ${{ steps.released.outputs.extension }}
           released: ${{ steps.released.outputs.version }}
           next: ${{ steps.plan.outputs.next }}
-          reason: v${{ steps.released.outputs.version }} のリリース公開後、次の開発バージョン ${{ steps.plan.outputs.next }} に更新します。
+          reason: ${{ steps.released.outputs.extension }} の v${{ steps.released.outputs.version }} のリリース公開後、次の開発バージョン ${{ steps.plan.outputs.next }} に更新します。

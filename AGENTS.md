@@ -1,8 +1,10 @@
-# tab-volume-controller
+# firefox-extensions
+
+Firefox 拡張を `extensions/<name>/` に置く。開発コマンドはそのディレクトリで実行する。GitHub Actions も同じパスをカレントにする。
 
 ## 具体コマンド
 ```shell
-npx web-ext build --source-dir=src --artifacts-dir=web-ext-artifacts --overwrite-dest
+cd extensions/tab-volume-controller && npx web-ext build --source-dir=src --artifacts-dir=web-ext-artifacts --overwrite-dest
 ```
 
 # 共通ルール

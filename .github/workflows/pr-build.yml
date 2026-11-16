@@ -3,6 +3,14 @@ name: PR Build
 on:
   pull_request:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      extension:
+        description: ビルドする拡張
+        required: true
+        type: choice
+        options:
+          - tab-volume-controller
 
 permissions:
   contents: read
@@ -12,6 +20,15 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_dispatch' || matrix.extension == inputs.extension
+    strategy:
+      fail-fast: false
+      matrix:
+        extension:
+          - tab-volume-controller
+    defaults:
+      run:
+        working-directory: extensions/${{ matrix.extension }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -21,25 +38,29 @@ jobs:
 
       - name: Read version
         id: version
+        env:
+          EXTENSION: ${{ matrix.extension }}
         run: |
           version=$(node -p "require('./src/manifest.json').version")
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Build extension package
         id: package
+        env:
+          EXTENSION: ${{ matrix.extension }}
         run: |
           npx web-ext build --source-dir=src --artifacts-dir=web-ext-artifacts --overwrite-dest
           built_zip=$(ls web-ext-artifacts/*.zip)
-          xpi_path="web-ext-artifacts/tab-volume-controller-${{ steps.version.outputs.version }}.xpi"
+          xpi_path="web-ext-artifacts/${EXTENSION}-${{ steps.version.outputs.version }}.xpi"
           cp "$built_zip" "$xpi_path"
           unzip -l "$xpi_path" | grep -q ' manifest.json$'
-          echo "xpi=$xpi_path" >> "$GITHUB_OUTPUT"
+          echo "xpi=extensions/${EXTENSION}/${xpi_path}" >> "$GITHUB_OUTPUT"
 
       - name: Upload extension artifact
         id: upload
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: tab-volume-controller-${{ steps.version.outputs.version }}
+          name: ${{ matrix.extension }}-${{ steps.version.outputs.version }}
           path: ${{ steps.package.outputs.xpi }}
           archive: false
           if-no-files-found: error
@@ -50,16 +71,17 @@ jobs:
         with:
           url: ${{ steps.upload.outputs.artifact-url }}
           output_path: qrcode-github.png
-          artifact_name: xpi-qr-code-github
+          artifact_name: xpi-qr-code-github-${{ matrix.extension }}
 
       - name: Comment PR with artifact link
+        if: github.event_name == 'pull_request'
         uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b # v3.0.1
         with:
-          comment-tag: pr-build-artifact
+          comment-tag: pr-build-artifact-${{ matrix.extension }}
           message: |
             ## PR ビルド成果物
 
-            **`tab-volume-controller-${{ steps.version.outputs.version }}.xpi`**
+            **`${{ matrix.extension }}-${{ steps.version.outputs.version }}.xpi`**
 
             - [Download](${{ steps.upload.outputs.artifact-url }})
             - [QRコード](${{ steps.github_qr_artifact.outputs.artifact-url }})

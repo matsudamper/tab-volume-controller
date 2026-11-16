@@ -1,6 +1,9 @@
 name: Release plan
 description: manifest のバージョンと GitHub Release の公開状態を判定する
 inputs:
+  extension:
+    description: extensions/ 以下のディレクトリ名
+    required: true
   version:
     description: 判定対象のバージョン（省略時は manifest.json を使用）
     required: false
@@ -9,6 +12,9 @@ outputs:
   version:
     description: 判定対象のバージョン
     value: ${{ steps.plan.outputs.version }}
+  tag:
+    description: 対象の GitHub Release タグ
+    value: ${{ steps.plan.outputs.tag }}
   published:
     description: 対象バージョンが GitHub Release で公開済みか
     value: ${{ steps.plan.outputs.published }}
@@ -23,8 +29,10 @@ runs:
   steps:
     - id: plan
       shell: bash
+      working-directory: ${{ github.workspace }}/extensions/${{ inputs.extension }}
       env:
         GH_TOKEN: ${{ github.token }}
+        EXTENSION: ${{ inputs.extension }}
         INPUT_VERSION: ${{ inputs.version }}
       run: |
         version="${INPUT_VERSION}"
@@ -32,9 +40,17 @@ runs:
           version=$(node -p "require('./src/manifest.json').version")
         fi
 
+        tag="${EXTENSION}-v${version}"
+        # 単一拡張だった頃のタグ vX.Y.Z は tab-volume-controller のリリースとして残っている
+        if [ "$EXTENSION" = "tab-volume-controller" ] && ! gh release view "$tag" >/dev/null 2>&1; then
+          if gh release view "v${version}" >/dev/null 2>&1; then
+            tag="v${version}"
+          fi
+        fi
+
         published=false
-        if gh release view "v${version}" >/dev/null 2>&1; then
-          is_draft=$(gh release view "v${version}" --json isDraft -q '.isDraft')
+        if gh release view "$tag" >/dev/null 2>&1; then
+          is_draft=$(gh release view "$tag" --json isDraft -q '.isDraft')
           if [ "$is_draft" = "false" ]; then
             published=true
           fi
@@ -55,6 +71,7 @@ runs:
         ")
 
         echo "version=${version}" >> "$GITHUB_OUTPUT"
+        echo "tag=${tag}" >> "$GITHUB_OUTPUT"
         echo "published=${published}" >> "$GITHUB_OUTPUT"
         echo "next=${next}" >> "$GITHUB_OUTPUT"
         echo "already_bumped=${already_bumped}" >> "$GITHUB_OUTPUT"
